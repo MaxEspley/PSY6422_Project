@@ -1,0 +1,84 @@
+---
+title: "PSY6422_Lab7Markdown"
+author: "Max"
+date: "2024-02-29"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+Edmans et. al., 2007 performed an analysis on the influence of international sporting results on countries' stock returns, finding that **national team losses predicted lower stock returns**. The researchers hypothesized that this effect was due to decreased investor mood.
+
+
+*Here's a link to their study if you're interested...*
+
+<https://onlinelibrary.wiley.com/doi/epdf/10.1111/j.1540-6261.2007.01262.x?saml_referrer>
+
+## My Analysis
+
+I would like to perform a similar analysis of England's football (soccer) results and the returns of FTSE 100 stocks, starting in 2002 after the start of Japan World Cup. 
+
+## The Data
+
+**Below are the two datasets which will be merged and analysed together in the project.**
+
+The ftse100 dataset contains a huge collection of daily stock returns, showing the highest, lowest, and average levels at that day. The change variable presents how stock values changed compared to the day before, and will be used to sense how football results may impact investor behaviours.
+
+The results dataset contains all international football results since 1872, detailing the teams that played, the number of goals scored by each team, and the competition that each game was played in. As you can see, the first five recorded international football matches were between England and Scotland! Games featuring England and possibly other UK teams will be filtered into a new database, and a new variable will be created showing how each team of interest faired in their games based off of the scorelines shown in the dataset.
+```{r, include=FALSE}
+#Requirements
+library(tidyverse)
+library(here)
+
+#Import Datasets
+ftse100pathway <- here("..", "Assessment", "FTSE100_Data_2002_2024.csv")
+ftse100 <- read.csv(ftse100pathway)
+
+resultspathway <- here("..", "Assessment", "results.csv")
+results <- read.csv(resultspathway)
+
+```
+
+
+```{r}
+
+#Show Data
+head(ftse100)
+head(results)
+
+```
+
+## A Visualization
+
+Below you can see a visualization showing how Stock Prices in the UK, based from the ftse100 data, have changed since 2002
+
+```{r, include=FALSE}
+
+#Convert date values to a date variable on R
+ftse100$Date <- as.Date(ftse100$Date, format = "%d/%m/%Y")
+
+#Decide what values i want to show on my y axis
+desired_y_values <- c(0, 2000, 4000, 6000, 8000)
+
+#Remove non-numeric price values
+ftse100$Price <- as.numeric(gsub("[^0-9.]", "", ftse100$Price))
+
+
+```
+
+```{r, echo=FALSE}
+
+#Plot stock values over time
+ggplot(ftse100, aes(x = Date, y = Price)) +
+  geom_point(color = "blue", size = 0.5) +
+  labs(title = "Scatterplot Investigating the Change in Stock Prices over Time", x = "Date", y = "Stock Prices") +
+  theme_minimal() +
+  scale_y_continuous(breaks = desired_y_values)
+
+```
