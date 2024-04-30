@@ -1,0 +1,29 @@
+CODEBOOK
+
+
+There were three datasets analysed in this project:
+FTSE100_Data_2002_2024.csv
+results.csv
+shootouts.csv
+
+
+FTSE100_Data_2002_2024.csv -
+
+The ftse100 dataset contains a huge collection of daily stock returns, showing the date of data collection (Date) as well as the highest (High), lowest (Low), and average (Price) stock values of that day. The dataset also presents the percentage at which stocks changed from the day before (Change..).
+
+This data was sourced from: https://uk.investing.com/indices/uk-100-historical-data Investing.com is a fi- nancial website which provides free real-time stock data across 250 exchanges worldwide. They employ over 250 people to publish trustworthy data each day. https://uk.investing.com/about-us/
+
+
+results.csv -
+
+The results dataset contains all international football results since 1872, detailing the date of each match (date), the current names of countries that played (home_team and away_team), the number of goals scored by each team (home_score and away_score), and the competition that each game was played in (tourna- ment). Information was also provided regarding where the match was played and whether this was a neutral location or not (neutral).
+
+This data was sourced from: https://www.kaggle.com/datasets/martj42/international-football-results-from- 1872-to-2017
+
+Unlike what the link itself suggests, this kaggle user collected data from international football matches start- ing from the very first official match in 1872 up to 2024. The dataset contains only men’s first team matches, and does not include matches from the Olympic Games. In the words of the user: “The data is gathered from several sources including but not limited to Wikipedia, rsssf.com, and individual football associations’ websites.”
+
+
+shootouts.csv
+
+The shootouts dataset contains data for every international penalty shootout since 1967. Once again, there is information showing the two teams that played (home_team and away_team) and the date of each shootout (date). Each row contains the winner of the shootout (winner), and some rows even show which team took the first penalty in the shootout (first_shooter).
+This data was also sourced from: https://www.kaggle.com/datasets/martj42/international-football-results- from-1872-to-2017
