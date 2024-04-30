@@ -1,84 +1,877 @@
 ---
-title: "PSY6422_Lab7Markdown"
+title: "index"
 author: "Max"
-date: "2024-02-29"
-output:
-  html_document:
-    df_print: paged
+date: "2024-04-30"
+output: html_document
+theme: cosmo
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+# Introduction
+
 ## Background
 
-Edmans et. al., 2007 performed an analysis on the influence of international sporting results on countries' stock returns, finding that **national team losses predicted lower stock returns**. The researchers hypothesized that this effect was due to decreased investor mood.
+*Edmans et. al., 2007* performed an analysis on the influence of international sporting results on countries' stock returns, finding that **national team losses predicted lower stock returns**. The researchers hypothesized that this effect was due to decreased investor mood.
 
 
-*Here's a link to their study if you're interested...*
+Here's a link to their study if you're interested...
 
 <https://onlinelibrary.wiley.com/doi/epdf/10.1111/j.1540-6261.2007.01262.x?saml_referrer>
 
-## My Analysis
 
-I would like to perform a similar analysis of England's football (soccer) results and the returns of FTSE 100 stocks, starting in 2002 after the start of Japan World Cup. 
+I would like to perform a similar analysis of each UK country's national football (soccer) results and the returns of FTSE 100 stocks, beginning in 2002 after the start of the Japan World Cup. 
 
-## The Data
 
-**Below are the two datasets which will be merged and analysed together in the project.**
+## Requirements
 
-The ftse100 dataset contains a huge collection of daily stock returns, showing the highest, lowest, and average levels at that day. The change variable presents how stock values changed compared to the day before, and will be used to sense how football results may impact investor behaviours.
+The code used loads of functions, and therefore required many libraries!
 
-The results dataset contains all international football results since 1872, detailing the teams that played, the number of goals scored by each team, and the competition that each game was played in. As you can see, the first five recorded international football matches were between England and Scotland! Games featuring England and possibly other UK teams will be filtered into a new database, and a new variable will be created showing how each team of interest faired in their games based off of the scorelines shown in the dataset.
+These included:
+library(tidyverse),
+library(here),
+library(tidyr),
+library(ggplot2),
+library(dplyr),
+library(plotly),
+library(gganimate),
+library(gifski),
+library(forcats),
+library(ggtext),
+library(scales),
+library(prismatic),
+
 ```{r, include=FALSE}
+
 #Requirements
 library(tidyverse)
 library(here)
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(gganimate)
+library(gifski)
+library(forcats)
+library(ggtext)
+library(scales)
+library(prismatic)
+
+```
+
+## Importing the Data
+
+I used the here function to import the data, allowing this code to run on any computer which had downloaded the "projectfolder" folder
+
+```{r, include = TRUE}
 
 #Import Datasets
-ftse100pathway <- here("..", "Assessment", "FTSE100_Data_2002_2024.csv")
+ftse100pathway <- here("projectfolder", "data", "FTSE100_Data_2002_2024.csv")
 ftse100 <- read.csv(ftse100pathway)
 
-resultspathway <- here("..", "Assessment", "results.csv")
+resultspathway <- here("projectfolder", "data", "results.csv")
 results <- read.csv(resultspathway)
+
+shootoutspathway <- 
+  here("projectfolder", "data", "shootouts.csv")
+shootouts <- read.csv(shootoutspathway)
 
 ```
 
 
-```{r}
+\newpage
 
-#Show Data
+# Data Origins
+
+### We first needed a record of UK stock data...
+
+The Financial Times Stock Exchange 100 Index (ftse100) is a stock market formed from a collective of 100 of the UK's most valuable companies. It is renowned as a solid reflection of UK stocks and UK investor behaviours in general.
+
+The ftse100 dataset contains a huge collection of daily stock returns, showing the date of data collection (*Date*) as well as the highest (*High*), lowest (*Low*), and average (*Price*) stock values of that day. The dataset also presents the percentage at which stocks changed from the day before (*Change..*).
+
+This data was sourced from:
+<https://uk.investing.com/indices/uk-100-historical-data>
+Investing.com is a financial website which provides free real-time stock data across 250 exchanges worldwide. They employ over 250 people to publish trustworthy data each day.
+<https://uk.investing.com/about-us/>
+
+
+
+```{r, include = TRUE}
+
 head(ftse100)
+
+```
+
+### Next, we needed a record of international football matches since 2002...
+
+The results dataset contains all international football results since 1872, detailing the date of each match (*date*), the current names of countries that played (*home_team* and *away_team*), the number of goals scored by each team (*home_score* and *away_score*), and the competition that each game was played in (*tournament*). Information was also provided regarding where the match was played and whether this was a neutral location or not (*neutral*). 
+
+This data was sourced from:
+<https://www.kaggle.com/datasets/martj42/international-football-results-from-1872-to-2017>
+
+Unlike what the link itself suggests, this kaggle user collected data from international football matches starting from the very first official match in 1872 up to 2024. The dataset contains only men's first team matches, and does not include matches from the Olympic Games. In the words of the user: "The data is gathered from several sources including but not limited to Wikipedia, rsssf.com, and individual football associations' websites."
+
+```{r, include = TRUE}
+
 head(results)
 
 ```
 
-## A Visualization
+### Finally, we needed data for any football matches that went to penalty shootouts...
 
-Below you can see a visualization showing how Stock Prices in the UK, based from the ftse100 data, have changed since 2002
+```{r, include = TRUE}
 
-```{r, include=FALSE}
+head(shootouts)
+
+```
+
+The shootouts dataset contains data for every international penalty shootout since 1967. Once again, there is information showing the two teams that played (*home_team* and *away_team*) and the date of each shootout (*date*). Each row contains the winner of the shootout (*winner*), and some rows even show which team took the first penalty in the shootout (*first_shooter*).
+
+This data was also sourced from:
+<https://www.kaggle.com/datasets/martj42/international-football-results-from-1872-to-2017>
+
+
+
+
+## Research Questions
+
+**Three research questions were created in this research project.**
+
+*1. How have UK stock values changed over time?*
+
+*2. How do the four UK national football teams differ?*
+
+*3. Can national football results really have an impact on UK stock market values?*
+
+Three visualisations were created in attempt to answer these questions.
+
+
+\newpage
+
+
+# Plot One: How have UK stock values changed over time?
+
+I wanted to create a line graph showing how daily ftse100 stock values have increased/decreased since January 2002. I then planned to animate the graph to better visualise how the line moves through time.
+
+This Plot only required data from the ftse100 dataset
+
+## Data Preperation
+
+Before creating the plot, I needed to ensure that my variables of interest were in the correct format.
+
+```{r, include=TRUE}
 
 #Convert date values to a date variable on R
 ftse100$Date <- as.Date(ftse100$Date, format = "%d/%m/%Y")
 
-#Decide what values i want to show on my y axis
-desired_y_values <- c(0, 2000, 4000, 6000, 8000)
+#Convert Price to a numerical variable
+ftse100$Price <- as.numeric(gsub(",", "", ftse100$Price)) #Remove confusing commas
+ftse100$Price <- as.numeric(ftse100$Price)
 
-#Remove non-numeric price values
-ftse100$Price <- as.numeric(gsub("[^0-9.]", "", ftse100$Price))
+```
+
+## Creation
+
+Before creating an animated plot, I needed to create one which wasn't animated
+
+```{r, include = FALSE}
+
+#Define Colour Scale of the Line of Visualisation
+#Low Values show up as Red
+#High Values show up as Green
+colour_scale <- scale_color_gradient(low = "red", high = "green")
+
+```
+
+```{r, include=TRUE}
+
+#Create the initial (not animated) plot
+#Line graph
+stockplot <- ggplot(ftse100, 
+            aes(x = Date, y = Price, color = Price)) +
+  geom_line() +
+  
+  #Add heading and axis titles
+  labs(title = "UK Stocks Since 2002", 
+       subtitle = paste("Change in FTSE100 Daily Stock Values from",
+                        format(min(ftse100$Date), "%B %Y"),
+                        "to",
+                        format(max(ftse100$Date), "%B %Y")),
+       x = "Year", y = "UK Stock Price (£)") +
+  
+  #Choose Theme
+  theme_classic() +
+  
+  #Add Colour Scale
+  colour_scale +
+  
+  #Determine X axis Labels every 2 years
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  
+  #Add vertical dashed lines coming from the X axis labels
+  geom_vline(xintercept = as.numeric(seq(min(ftse100$Date), max(ftse100$Date), by = "2 years")), 
+             color = "gray", linetype = "dashed", alpha = 0.5) +
+  
+  #Add data source below plot
+  annotate("text", x = as.Date("2014-01-01"), y = min(ftse100$Price), 
+           label = "Data Source: https://uk.investing.com", hjust = 0, vjust = -1,
+           color = "darkgray", size = 3) +
+  
+  #Colour code, add fonts, determine size of writing
+  theme(
+    panel.background = element_rect(fill = "#fbf9f4", color = "#fbf9f4"),
+    plot.background = element_rect(fill = "#fbf9f4", color = "#fbf9f4"),
+    panel.border = element_blank(),
+    panel.grid.major.x = element_blank(),
+    axis.title.x = element_text(color = "#1b2860"),
+    axis.title.y = element_text(color = "#1b2860"),
+    plot.title = element_text(
+      family = "sans",
+      size = 20,
+      face = "bold",
+      color = "#1b2860"),
+    plot.title.position = "plot", # slightly different from default
+    axis.text = element_text(
+      family = "sans",
+      size = 10, 
+      color = "#1b2860"),
+    axis.title = element_text(
+      family = "sans",
+      size = 12))
+
+```
+
+Only then could I animate the line using the transition_reveal function
+
+```{r, include = TRUE}
+
+stocks_animated <- stockplot + transition_reveal(Date) +
+  enter_fade() +
+  exit_fade()
+
+```
+
+## The Visualisation
+
+Animated gifs are unfortunately not supported by all PDF outputs. Here is a visualisation of the linegraph before animation.
+
+```{r, include = TRUE}
+
+print(stockplot)
+
+```
+
+## Discussion
+
+This is a line graph showing the ups and downs of ftse100 stock prices since the 1st of January, 2002. Higher stock values are coloured in a positive green, whilst drops in values are coloured in a negative red. Dashed vertical lines also give reference for the 2-year breaks labelled on the x axis.
+
+There is a general increase in stock values, but this has been paired with some harsh dips. One dip that is interesting to note occurs just after the start of the year 2020. The COVID pandemic really affected investor behaviour!
+
+
+\newpage
+
+# Plot Two: How do the four UK national football teams differ?
+
+For my next plot, I wanted to create a dumbbell chart showing how each UK nation's football team differ in their individual results.
+
+## Data Preperation
+
+Before beginning the second (and third!) analyses, I needed to merge the stocks, results, and shootouts datasets. Merging the results and shootouts datasets was necessary for the second plot as i wanted to present a statistical visualisation of how each UK nation has performed in all of their football matches.
+
+I first ensured that the values from all date variables were characterised as dates, and merged the datasets using the dates as well as the teams which played for the results and shootouts datasets.
+
+```{r, include = TRUE}
+
+#Convert all date values to a date variable on R
+ftse100$Date <- 
+  as.Date(ftse100$Date, format = "%d/%m/%Y")
+
+results$date <- 
+  as.Date(results$date, format = "%Y-%m-%d")
+
+shootouts$date <- 
+  as.Date(shootouts$date, format = "%d/%m/%Y")
+
+
+#Merge Datasets using this Date variable
+data <- 
+  merge(ftse100, results, 
+        by.x = "Date", 
+        by.y = "date", 
+        all = TRUE)
+data <- 
+  merge(data, shootouts, 
+        by.x = c("Date", "home_team", "away_team"), 
+        by.y = c("date", "home_team", "away_team"), 
+        all.x = TRUE)
+
+```
+
+The ftse100 dataset did not contain values for every day, so information from missing days was filled in using the next known values.
+
+```{r, include=TRUE}
+
+#Fill in missing Stock data
+#Some days do not have stock data
+#This code adds to missing info using the next known stock values
+
+data <- data[order(data$Date), ]
+data <- data %>%
+  fill(Price, Open, High, Low, Vol., Change.., .direction = "down")
+
+```
+
+We then needed to create a new variable showing who won football matches. So far we only had the winners of games that went to penalties. We needed to add to the already created winner variable without changing its present values
+
+```{r, include=TRUE}
+
+#Determine which rows need filling in the winner variable
+newwinners <- is.na(data$winner)
+
+
+#If home_score > away_score, put the home team in winner variable
+#If away_score > home_score, put the away team in winner variable
+#If else (scores are even), put "draw"
+data$winner[newwinners] <- 
+  
+  ifelse(data$home_score[newwinners] > data$away_score[newwinners], 
+         data$home_team[newwinners], 
+         
+         ifelse(data$home_score[newwinners] < data$away_score[newwinners], 
+                data$away_team[newwinners], 
+                
+                "draw"))
+
+```
+
+Rows without any football matches allocated to them were then removed, and a sanity check was performed to see if this all went through ok.
+
+```{r, include = TRUE}
+
+#Remove Rows with no Football Match
+data <- data[complete.cases(data$home_team), ]
+
+#Sanity check
+head(data)
+
+```
+
+A new dataset specific for the creation of plot 2 was made, and all unneeded colums were removed.
+
+```{r, include=TRUE}
+
+#Create new dataset for plot 2
+df_footy <- data
+
+#Remove Unneeded Columns
+df_footy <- 
+  subset(df_footy, select = -c(Price, Open, High, Low, Vol., Change.., city, country, first_shooter))
 
 
 ```
 
-```{r, echo=FALSE}
+I wanted to see how nations had differed in their wins, losses, draws. I therefore created a new dataset showing these variables, called nationstats.
 
-#Plot stock values over time
-ggplot(ftse100, aes(x = Date, y = Price)) +
-  geom_point(color = "blue", size = 0.5) +
-  labs(title = "Scatterplot Investigating the Change in Stock Prices over Time", x = "Date", y = "Stock Prices") +
-  theme_minimal() +
-  scale_y_continuous(breaks = desired_y_values)
+We first needed the stats of when each team was the home team, and then performed the same methods on when each team was the away team
+
+```{r, include=TRUE}
+
+nationstats <- df_footy %>%
+  group_by(team = home_team) %>%   #Create variable named "team" for each national football team
+  summarise(
+    games_played = n(),   #Total games played by how many times they are in home_team
+    games_won = sum(winner == home_team),   #If team is in winner, they won the game
+    games_lost = sum(winner != home_team & winner != "draw")   #If team is not winner and the game was not a draw, put down as a loss
+  ) %>%
+  ungroup() %>%  # Remove grouping
+  bind_rows(  #Bind rows to this dataset using the same process for away teams
+    df_footy %>%
+      group_by(team = away_team) %>%
+      summarise(
+        games_played = n(),
+        games_won = sum(winner == away_team),
+        games_lost = sum(winner != away_team & winner != "draw")
+      )) %>%
+  arrange(desc(games_played))  # Arrange by total games played, descending
 
 ```
+
+Two rows for each team were created by this code. One showed the statistics for when a team was the home team, and the other showed statistics for when the team was the away team. The next job was to bind these rows together to show total matches/wins/losses
+
+```{r, include=TRUE}
+
+nationstats <- nationstats %>%
+  group_by(team) %>%
+  summarise(
+    games_played_total = sum(games_played),
+    games_won_total = sum(games_won),
+    games_lost_total = sum(games_lost),
+    .groups = "drop"  # Ensure that grouped data is returned as a flat data frame
+  )
+
+#Check the new dataset looks ok
+head(nationstats)
+
+```
+
+I was only interested in data from the four UK countries. These are: England, Scotland, Wales, and Northern Ireland. I therefore filtered the dataset to only show the values of these teams.
+
+```{r, include=TRUE}
+
+#Determine which nations i want to keep
+countries_to_keep <- 
+  c("England", "Scotland", "Wales", "Northern Ireland")
+
+#Create new dataset with only values of those teams
+UKfooty <- nationstats %>%
+  filter(team %in% countries_to_keep)
+
+#View new dataset
+head(UKfooty)
+
+```
+
+## Creation
+
+Before visualising the dataset, I arranged the rows in descending order of total matches played, calculated percentages to show the frequency of wins and losses for each team, and set colour palettes that I thought represented the win and loss categories well.
+
+I also set the themes for the visualisation in advance, alongside the title and subtitles that I wished to show.
+
+```{r, include=FALSE}
+
+#Arrange the nations in descending order of total matches played
+#Create percentages of result frequency for each team
+UKfooty <- UKfooty %>% 
+  mutate(team = fct_rev(fct_inorder(team))) |> 
+  pivot_longer(
+    cols = -c(team, games_played_total),
+    names_to = "type",
+    values_to = "result"
+  ) |> 
+  mutate(share = result / games_played_total) |> 
+  arrange(team, -share) |> 
+  mutate(is_smaller = if_else(row_number() == 1, 0, 1), .by = team)
+
+
+#Set Colours that will be used in the Visualisation
+pal_base <- c("#d73027", "#1b9e77")
+pal_dark <- clr_darken(pal_base, .25)   #darken these colours slightly for another use
+
+blue_base <- "#1b2890"
+blue_dark <- "#1b2860"
+
+
+#Determine the colour coding/themes of Plot 2
+#I took a lot of inspiration from another football dataset
+#https://r-graph-gallery.com/web-dumbell-chart.html
+
+theme_set(theme_minimal(base_family = "sans", base_size = 22)) #set theme
+theme_update(
+  axis.title = element_blank(),   #no initial axis titles
+  axis.text.y = element_text(hjust = 0, color = blue_dark),   #set colour of team names
+  panel.grid.minor = element_blank(),
+  panel.grid.major = element_blank(),   #no panel grids
+  
+  #Set plot title characteristics
+  plot.title = element_textbox_simple(
+    size = rel(1.25), face = "plain", lineheight = 1.05, 
+    fill = "transparent", width = unit(8, "inches"), box.color = "transparent", 
+    margin = margin(0, 0, 35, 0), hjust = 0, halign = 0),
+  
+  #Set caption characteristics
+  plot.caption = element_markdown(
+    size = rel(.5), color = blue_base, hjust = 0, margin = margin(t = 20, b = 0),
+    family = 'sans'),
+  
+  #Set positions of words in plot
+  plot.title.position = "plot",
+  plot.caption.position = "plot",
+  plot.margin = margin(25, 25, 15, 25),
+  
+  #Add background colour
+  panel.background = element_rect(fill = "#fbf9f4", color = "#fbf9f4"),
+  plot.background = element_rect(fill = "#fbf9f4", color = "#fbf9f4"),
+  legend.position = "none"
+)
+
+
+#Set Title and Subtitle
+
+#Apply different colours to different parts of the title
+title <- paste0(
+  "Out of the Four UK National Football Teams, <b>England have the <b style='color:",
+  pal_dark[1], ";'>lowest loss</b> and <b style='color:", pal_dark[2], ";'>highest win</b> rates</b>"
+)
+
+#Set caption
+caption <- paste0(
+  "<b>Teams are ranked according to the number of International Football matches played so far | Source: Mart Jürisoo"
+)
+
+
+#What is the df?
+n <- length(unique(UKfooty$team)) - 1
+
+
+```
+
+After performing these measures in advance, here is the code I used to create the actual visualisation:
+
+```{r, include=TRUE}
+
+#Create Plot
+UKFootballPlot = ggplot(UKfooty, aes(x = share, y = team)) +
+  
+  #dumbbell segments
+  stat_summary(
+    geom = "linerange", fun.min = "min", fun.max = "max",
+    linewidth = c(rep(.8, n), 1.2), color = c(rep(blue_base, n), blue_dark)
+  ) +
+  
+  #dumbbell points
+  #white point to go over line endings
+  geom_point(
+    aes(x = share), size = 6, shape = 21, stroke = 1, color = "white", fill = "white"
+  ) +
+  #semi-transparent point fill
+  geom_point(
+    aes(x = share, fill = type), size = 6, shape = 21, stroke = 1, color = "white", alpha = .7
+  ) +
+  #point outline
+  geom_point(
+    aes(x = share), size = 6, shape = 21, stroke = 1, color = "white", fill = NA
+  ) +
+  
+  #result labels
+  geom_text(
+    aes(label = percent(share, accuracy = 1, prefix = "    ", suffix = "%    "), 
+        x = share -0.02, hjust = is_smaller-0.32, color = type),
+    fontface = c(rep("plain", n*2), rep("bold", 2)),
+    family = "sans", size = 4.2
+  ) +
+  
+  #legend labels
+  annotate(
+    geom = "text", x = c(.18, .60), y = n + 1.8, 
+    label = c("matches lost", "matches won"), family = "sans", 
+    fontface = "bold", color = pal_base, size = 5, hjust = .5
+  ) +
+  
+  coord_cartesian(clip = "off") +   #Prevent clipping of points
+  scale_x_continuous(expand = expansion(add = c(.035, .05)), guide = "none") +   #Expand x-axis and remove x-axis guide
+  scale_y_discrete(expand = expansion(add = c(.35, 1))) +   #Expand y axis
+  scale_color_manual(values = pal_dark) +   #Set colour scale for lines
+  scale_fill_manual(values = pal_base) +   #Set fill scale for points
+  labs(title = title, caption = caption) +   #Set plot title and caption
+  theme(axis.text.y = element_text(face = "bold", size=14))   #Set y axis text to bold and adjust size
+
+```
+
+The plot was then saved as a png file in the correct dimensions so all information could be shown.
+
+```{r, include=FALSE}
+
+# Set the dimensions of the plot
+plot2_width <- 10 # Adjust as needed
+plot2_height <- 6 # Adjust as needed
+
+#Save the Plot
+ggsave(here("projectfolder", "figs", "ukfootballplot.png"), plot = UKFootballPlot, width = plot2_width, height = plot2_height)
+
+```
+
+## The Visualisation
+
+```{r, out.width="100%", fig.align="center"}
+knitr::include_graphics("projectfolder/figs/ukfootballplot.png")
+
+```
+
+## Discussion
+
+This dumbbell plot clearly presents the difference in football results across the four UK teams. England are shown to acheive the highest win rates and the lowest percentage of losses, and so could be argued to have faired the best since international football competitions began. On the other hand, Wales show the lowest win rates and the highest percentage of losses.
+
+\newpage
+
+# Plot 3: Can national football results really have an impact on UK stock market values?
+
+The final analysis was the one I was most looking forward to! Will positive or negative football results influence the UK's most reliable stock market in the ftse100?
+
+## Data Preperation
+
+To start, I once again had to determine my countries of interest and filter out any matches not containing UK countries. I then removed any rows that contained values occurring before the first of January, 2002. The dataset was then cleaned of any unneeded variables.
+
+```{r, include=TRUE}
+
+#Set countries of interest
+countries_to_keep <- 
+  c("England", "Scotland", "Wales", "Northern Ireland")
+
+#Keep rows if UK country is a home or away team
+data <- 
+  data[data$home_team %in% countries_to_keep | 
+         data$away_team %in% countries_to_keep, ]
+
+
+#Remove data before 2002
+remove_date <- as.Date("2002-01-01")
+data <- data[data$Date >= remove_date, ]
+
+
+#Remove Unneeded Columns
+data <- 
+  subset(data, select = -c(Open, High, Low, Vol., city, country, first_shooter))
+
+
+#Check data looks ok
+head(data)
+
+```
+
+
+Using the same process as before, match winners were added to the "winner" variable without overriding any values there already from penalty shootouts.
+
+```{r, include=FALSE}
+
+#Add match winners to winner variable
+#Use same process as before
+newwinners <- is.na(data$winner)
+data$winner[newwinners] <- 
+  
+  ifelse(data$home_score[newwinners] > data$away_score[newwinners], 
+         data$home_team[newwinners], 
+         
+         ifelse(data$home_score[newwinners] < data$away_score[newwinners], 
+                data$away_team[newwinners], 
+                
+                "draw"))
+
+
+```
+
+I then needed to create a variable to show how each UK team had faired in their match. In an ideal world this would be easy, as i could just see if a UK team was playing and check if they are in the winner variable. However, UK teams often play against each other, so this process would allocate every one of these games as a UK win (unless it was a draw of course).
+
+I therefore decided to prioritise the result of a country with highest population. Using this logic, if winner of a match was England, the result would show win. If the winner was Scotland, show win if England didn't play. If winner is Wales, show win if England or Scotland didn't play. If winner is Northern Ireland, only show win if England, Scotland, or Wales didn't play. If the winner variable showed draw, obviously I would want the result variable to say draw. Finally, if anything else was the case (the winner was not a UK country or draw), the result variabe would show loss.
+
+Here's the function I created to do this:
+
+```{r, include=TRUE}
+
+get_result <- function(winner, home_team, away_team) {
+  if (winner == "draw") {
+    return("draw")
+  } else if (winner == "England") {
+    return("win")
+  } else if (winner == "Scotland") {
+    if ("England" %in% c(home_team, away_team)) {
+      return("loss")
+    } else {
+      return("win")
+    }
+  } else if (winner == "Wales") {
+    if ("England" %in% c(home_team, away_team) || "Scotland" %in% c(home_team, away_team)) {
+      return("loss")
+    } else {
+      return("win")
+    }
+  } else if (winner == "Northern Ireland") {
+    if ("England" %in% c(home_team, away_team) || "Scotland" %in% c(home_team, away_team) || "Wales" %in% c(home_team, away_team)) {
+      return("loss")
+    } else {
+      return("win")
+    }
+  } else {
+    return("loss")
+  }
+}
+
+# Apply the function to dataset
+data$result <- mapply(get_result, data$winner, data$home_team, data$away_team)
+
+
+```
+
+I then ensured that my variable showing percentage changes in stock prices was a numerical variable, before ordering my results columns in the order: win, draw, loss so that it looks good on the plot.
+
+Using the same techniques as before, I filtered out games from any competitions that were not international tournaments. Friendly games, qualifiers, and the recently created "nations league" very rarely generate as much attention as the much larger World Cup or EUROs tournament games, and so I decided to focus on the impact of these games on the stock market.
+
+```{r, include=FALSE}
+
+#Ensure all stock change values are numerical
+data$Change.. <- as.numeric(sub("%", "", data$Change..))
+
+
+#Reorder result columns to win, draw, loss
+data$result <- factor(data$result, levels = c("win", "draw", "loss"))
+
+
+#National football matches typically only matter to fans when they are competitive
+#The two most important competitions for UK nations are the Euros and World Cup
+
+#Filter for only Tournament Games
+
+#Determine which Tournaments to keep
+tournaments_to_keep <- c("FIFA World Cup", "UEFA Euro")
+
+#Filter data accordingly
+tournament_data <- data %>%
+  filter(tournament %in% tournaments_to_keep)
+
+```
+
+Finally, I calculated the total number of matches that fitted into the win, draw, and loss conditions. The aim was to add this information to the plot using the ggplotly function.
+
+```{r, include = TRUE}
+
+#Calculate number of each condition
+result_n <- tournament_data %>%
+  group_by(result) %>%
+  summarize(count = n())
+
+```
+
+## Creation
+
+Here is the code I used to create the template for the third visualisation.
+
+```{r, include=TRUE}
+
+#Create Plot 3
+
+tournaments_plot <- ggplot(tournament_data %>%  # Start with tournament data
+                             group_by(result) %>%  # Group by tournament result
+                             summarize(Mean_Change = mean(Change..)),  # Summarize mean change for each result
+                           aes(x = result, y = Mean_Change, fill = result,  # Define aesthetics
+                               text = paste("Result:", result,  # Tooltip text
+                                            "<br>Mean UK Stock Change (%):", round(Mean_Change, 3),
+                                            "<br>Number of Values:", result_n$count[result]))) +  # Include count of values
+  
+  geom_bar(  # Add bar plot
+    stat = "identity",  # Use identity statistics
+    position = "identity",  # Use identity position
+    width = 0.8,  # Set bar width
+    colour = "#1b2860",  # Set border color
+    size = 0.3) +  # Set border size
+  
+  # Set plot labels
+  labs(title = "Football and The Stock Market",
+       x = "UK International Football Result (WC and EUROs only)", 
+       y = "Mean Stock Value Change (%)",
+       subtitle = "Can UK National Teams' Football Results Influence Daily FTSE100 Stock Prices?") +
+  
+  # Set fill colors manually
+  scale_fill_manual(values = c("win" = "#1b9e77", "draw" = "#fdae61", "loss" = "#d73027"),
+                    name = NULL) +
+  
+  # Set plot theme
+  theme_light() +  # Set light theme
+  theme(
+    panel.background = element_rect(fill = "#fbf9f4", color = "#fbf9f4"),  # Set panel background
+    plot.background = element_rect(fill = "#fbf9f4", color = "#fbf9f4"),  # Set plot background
+    panel.border = element_blank(),  # Remove panel border
+    panel.grid.major.x = element_blank(),  # Remove major gridlines on x-axis
+    axis.title.x = element_text(color = "#1b2860"),  # Set x-axis title color
+    axis.title.y = element_text(color = "#1b2860"),  # Set y-axis title color
+    plot.title = element_text(  # Set plot title text properties
+      family = "sans",  # Set font family
+      size = 20,  # Set font size
+      face = "bold",  # Set font face
+      color = "#1b2860"),  # Set font color
+    axis.text = element_text(  # Set axis text properties
+      family = "sans",  # Set font family
+      size = 10,  # Set font size
+      color = "#1b2860"),  # Set font color
+    axis.title = element_text(  # Set axis title properties
+      family = "sans",  # Set font family
+      size = 12)) +  # Set font size
+  
+  geom_hline(yintercept = 0, linetype = "solid", color = "#1b2860") +  # Add horizontal line at y = 0 for reference
+  guides(fill = "none")  # Remove fill legend
+
+```
+
+I then converted this plot into an interactive plot using ggplotly. One thing I had to note was that the code to make subtitles needed to be specifically tailored to the ggplotly function, meaning that these had to be written in after I had made the plot interactive.
+
+```{r, include=TRUE}
+
+#Make the plot interactive
+tournaments_animated <- ggplotly(tournaments_plot, tooltip = "text")
+
+#A seperate process was needed to include a subtitle to the interactive plot
+tournaments_animated <- tournaments_animated %>%
+  layout(
+    annotations = list(
+      text = "Can UK National Teams' Football Results Influence Daily FTSE100 Stock Prices?",
+      x = 0, y = 1.04,
+      font = list(size = 14, color = "black", family = "sans"),
+      xref = "paper", yref = "paper",
+      showarrow = FALSE
+    )
+  )
+
+
+
+#Add Data Sources
+#Add a text annotation for the stock data source
+tournaments_animated <- tournaments_animated %>%
+  layout(
+    annotations = list(
+      text = "Stock Data Source: https://uk.investing.com",
+      x = 1,
+      y = 0.85,  # Adjust the y-coordinate to position the text at the bottom
+      xref = "paper",
+      yref = "paper",
+      showarrow = FALSE,
+      font = list(
+        family = "sans",
+        size = 10,  # Adjust the font size as needed
+        color = "darkgrey"
+      )
+    )
+  )
+
+
+# Add a text annotation for the football data source
+tournaments_animated <- tournaments_animated %>%
+  layout(
+    annotations = list(
+      text = "Football Data Source: Mart Jürisoo",
+      x = 1,
+      y = 0.9,  # Adjust the y-coordinate to position the text at the bottom
+      xref = "paper",
+      yref = "paper",
+      showarrow = FALSE,
+      font = list(
+        family = "sans",
+        size = 10,  # Adjust the font size as needed
+        color = "darkgrey"
+      )
+    )
+  )
+
+```
+
+## The Visualisation
+
+Unfortunately the ggplotly version of this plot did not seem to work on a PDF. Here is the non-interactive version.
+
+```{r, include=TRUE}
+
+print(tournaments_plot)
+
+```
+
+## Discussion
+
+At a first glance, there seems to be some interaction between football results and the UK stock market value changes. When UK nations win football matches, there is an associated increase in Stock Values, and when they lose there is an associated decrease. However, it is worth noting that these mean changes are extremely small, being less than one percent. Furthermore, a statistical analysis of these results found absolutely no significance, so it is important to take these findings with a pinch of salt.
+
+Perhaps a larger analysis (such as Edmans' study) would find greater significance in the small differences between the win/loss conditions, due to the greater sample of football matches to go through. Only analysing the data of four football teams from a relatively short time frame would not have allowed me to determine whether these small football-related stock value changes were truly meaningful.
+
+## Summary
+
+Throughout this module I have had the opportunity to really develop my understanding of data science as a whole. I feel much more confident handling and analysing large datasets, and I believe I have really improved upon my ability to create attractive but also informative visualisations.
+
+This module has set me up with skills that I am sure could take me down a number of career pathways. Thank you to Tom and Hazel for teaching and supporting this module in an encouraging and enthusiastic manner. It really was a pleasure to take part in the lab classes each week.
