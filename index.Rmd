@@ -64,19 +64,19 @@ library(prismatic)
 
 ## Importing the Data
 
-I used the here function to import the data, allowing this code to run on any computer which had downloaded the "projectfolder" folder
+I used the here function to import the data, allowing this code to run on any computer which had downloaded the "psy6422_proj" folder
 
 ```{r, include = TRUE}
 
 #Import Datasets
-ftse100pathway <- here("projectfolder", "data", "FTSE100_Data_2002_2024.csv")
+ftse100pathway <- here("psy6422_proj", "data", "FTSE100_Data_2002_2024.csv")
 ftse100 <- read.csv(ftse100pathway)
 
-resultspathway <- here("projectfolder", "data", "results.csv")
+resultspathway <- here("psy6422_proj", "data", "results.csv")
 results <- read.csv(resultspathway)
 
 shootoutspathway <- 
-  here("projectfolder", "data", "shootouts.csv")
+  here("psy6422_proj", "data", "shootouts.csv")
 shootouts <- read.csv(shootoutspathway)
 
 ```
@@ -579,14 +579,14 @@ plot2_width <- 10 # Adjust as needed
 plot2_height <- 6 # Adjust as needed
 
 #Save the Plot
-ggsave(here("projectfolder", "figs", "ukfootballplot.png"), plot = UKFootballPlot, width = plot2_width, height = plot2_height)
+ggsave(here("psy6422_proj", "figs", "ukfootballplot.png"), plot = UKFootballPlot, width = plot2_width, height = plot2_height)
 
 ```
 
 ## The Visualisation
 
 ```{r, out.width="100%", fig.align="center"}
-knitr::include_graphics("projectfolder/figs/ukfootballplot.png")
+knitr::include_graphics("psy6422_proj/figs/ukfootballplot.png")
 
 ```
 
