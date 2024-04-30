@@ -15,3 +15,7 @@ The code used loads of functions, and therefore required many libraries!
 These included: library(tidyverse), library(here), library(tidyr), library(ggplot2), library(dplyr), library(plotly), library(gganimate), library(gifski), library(forcats), library(ggtext), library(scales), and library(prismatic).
 
 The R script contains the necessary code to install these libraries if needed.
+
+# My Full Analysis
+For more details regarding my analyses, please follow this link:
+https://rpubs.com/MaxEspley/PSY6422_Project
