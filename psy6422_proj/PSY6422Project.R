@@ -1,3 +1,14 @@
+#Install Packages if needed
+required_packages <- c("tidyverse", "here", "tidyr", "ggplot2", "dplyr", 
+                       "plotly", "gganimate", "gifski", "forcats", "ggtext",
+                       "scales", "prismatic", "htmlwidgets")
+
+for (package in required_packages) {
+  if (!requireNamespace(package, quietly = TRUE)) {
+    install.packages(package)
+  }
+}
+
 #Requirements
 library(tidyverse)
 library(here)
@@ -7,19 +18,23 @@ library(dplyr)
 library(plotly)
 library(gganimate)
 library(gifski)
-
+library(forcats)
+library(ggtext)
+library(scales)
+library(prismatic)
+library(htmlwidgets)
 
 #Import Datasets
 ftse100pathway <- 
-  here("..", "data", "FTSE100_Data_2002_2024.csv")
+  here("psy6422_proj", "data", "FTSE100_Data_2002_2024.csv")
 ftse100 <- read.csv(ftse100pathway)
 
 resultspathway <- 
-  here("..", "data", "results.csv")
+  here("psy6422_proj", "data","results.csv")
 results <- read.csv(resultspathway)
 
 shootoutspathway <- 
-  here("..", "data", "shootouts.csv")
+  here("psy6422_proj", "data", "shootouts.csv")
 shootouts <- read.csv(shootoutspathway)
 
 
@@ -77,7 +92,7 @@ stockplot <- ggplot(ftse100,
   
   #Add data source below plot
   annotate("text", x = as.Date("2014-01-01"), y = min(ftse100$Price), 
-           label = "Data Source: http://www.marketwatch.com", hjust = 0, vjust = -1,
+           label = "Data Source: https://uk.investing.com", hjust = 0, vjust = -1,
            color = "darkgray", size = 3) +
   
   #Colour code, add fonts, determine size of writing
@@ -116,8 +131,7 @@ print(stocks_animated)
 
 
 # Save the animated plot to the "figs" subfolder
-animate(stocks_animated, renderer = gifski_renderer(here("figs", "stocksplot.gif")))
-
+animate(stocks_animated, renderer = gifski_renderer(here("psy6422_proj", "figs", "stocksplot.gif")))
 
 
 #Prepare for creation of later visualisations
@@ -187,7 +201,7 @@ data$winner[newwinners] <-
 
 
 #View the dataset to check this has worked
-view(data)
+head(data)
 
 
 #Remove Rows with no Football Match
@@ -394,17 +408,16 @@ UKFootballPlot = ggplot(UKfooty, aes(x = share, y = team)) +
   labs(title = title, caption = caption) +   #Set plot title and caption
   theme(axis.text.y = element_text(face = "bold", size=14))   #Set y axis text to bold and adjust size
 
-#View the Plot
-print(UKFootballPlot)
-
-
 # Set the dimensions of the plot
 plot2_width <- 10 # Adjust as needed
 plot2_height <- 6 # Adjust as needed
 
+#View the Plot
+print(UKFootballPlot)
+
 
 #Save the Plot
-ggsave(here("figs", "ukfootballplot.png"), plot = UKFootballPlot, width = plot2_width, height = plot2_height)
+ggsave(here("psy6422_proj", "figs", "ukfootballplot.png"), plot = UKFootballPlot, width = plot2_width, height = plot2_height)
 
 
 
@@ -604,7 +617,7 @@ print(tournaments_animated)
 tournaments_animated <- tournaments_animated %>%
   layout(
     annotations = list(
-      text = "Stock Data Source: http://www.marketwatch.com",
+      text = "Stock Data Source: https://uk.investing.com",
       x = 1,
       y = 0.85,  # Adjust the y-coordinate to position the text at the bottom
       xref = "paper",
@@ -643,4 +656,8 @@ print(tournaments_animated)
 
 
 #Save Original Plot 3 Barplot
-ggsave(file = here("figs", "footystocks.png"), plot = tournaments_plot)
+ggsave(file = here("psy6422_proj", "figs", "footystocks.png"), plot = tournaments_plot)
+
+#Save Interactive Plot 3 as HTML
+plot3_html_file <- here::here("psy6422_proj", "figs", "footballstockplot.html")
+saveWidget(tournaments_animated, plot3_html_file)
